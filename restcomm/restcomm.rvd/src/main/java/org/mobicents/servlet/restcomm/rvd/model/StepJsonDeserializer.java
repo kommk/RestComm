@@ -18,6 +18,7 @@ import org.mobicents.servlet.restcomm.rvd.model.steps.record.RecordStep;
 import org.mobicents.servlet.restcomm.rvd.model.steps.redirect.RedirectStep;
 import org.mobicents.servlet.restcomm.rvd.model.steps.reject.RejectStep;
 import org.mobicents.servlet.restcomm.rvd.model.steps.say.SayStep;
+import org.mobicents.servlet.restcomm.rvd.model.steps.script.ScriptStep;
 import org.mobicents.servlet.restcomm.rvd.model.steps.sms.SmsStep;
 import org.mobicents.servlet.restcomm.rvd.model.steps.ussdcollect.UssdCollectStep;
 import org.mobicents.servlet.restcomm.rvd.model.steps.ussdlanguage.UssdLanguageStep;
@@ -58,6 +59,8 @@ public class StepJsonDeserializer implements JsonDeserializer<Step> {
             step = gson.fromJson(step_object, PlayStep.class);
         else if ("externalService".equals(kind))
             step = gson.fromJson(step_object, ExternalServiceStep.class);
+        else if ("script".equals(kind))
+            step = gson.fromJson(step_object,ScriptStep.class);
         else if ("redirect".equals(kind))
             step = gson.fromJson(step_object, RedirectStep.class);
         else if ("reject".equals(kind))

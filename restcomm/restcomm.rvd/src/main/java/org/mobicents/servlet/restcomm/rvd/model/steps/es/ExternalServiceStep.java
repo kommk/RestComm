@@ -20,6 +20,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
+import org.mobicents.servlet.restcomm.rvd.ProjectAwareRvdContext;
 import org.mobicents.servlet.restcomm.rvd.exceptions.ESRequestException;
 import org.mobicents.servlet.restcomm.rvd.exceptions.InterpreterException;
 import org.mobicents.servlet.restcomm.rvd.interpreter.Interpreter;
@@ -154,7 +155,7 @@ public class ExternalServiceStep extends Step {
      * @returns String - The module name to continue rendering with. null, to continue processing the existing module
      */
     @Override
-    public String process(Interpreter interpreter, HttpServletRequest httpRequest ) throws InterpreterException {
+    public String process(Interpreter interpreter, HttpServletRequest httpRequest, ProjectAwareRvdContext rvdContext ) throws InterpreterException {
 
         //ExternalServiceStep esStep = (ExternalServiceStep) step;
         String next = null;

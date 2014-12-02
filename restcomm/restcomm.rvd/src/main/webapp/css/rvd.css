@@ -472,6 +472,11 @@ textarea.medium {
 	margin-right: auto;
 }
 
+/* ------------------- designer steps ---------------------- */
+.field-source-code {
+	font-family: courier;
+}
+
 
 /* ------------------ #/designer --------------------------- */
 .editor .panel-heading {

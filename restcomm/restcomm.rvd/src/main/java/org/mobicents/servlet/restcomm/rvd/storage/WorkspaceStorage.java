@@ -156,6 +156,13 @@ public class WorkspaceStorage {
         }
     }
 
+    /**
+     * Writes a string to a file
+     * @param entityString
+     * @param entityName
+     * @param relativePath
+     * @throws StorageException
+     */
     public void storeEntityString(String entityString, String entityName, String relativePath) throws StorageException {
         if ( !relativePath.startsWith("/") )
             relativePath = "/" + relativePath;
@@ -171,6 +178,25 @@ public class WorkspaceStorage {
 
     public static void storeInfo(CallControlInfo info, String projectName, WorkspaceStorage workspaceStorage) throws StorageException {
         workspaceStorage.storeEntity(info, CallControlInfo.class, "cc", projectName);
+    }
+
+    /**
+     * Create a directory inside the workspace. All needed directories in the path are created.
+     * @param relativePath
+     */
+    public void createDirectory(String relativePath ) {
+        if ( !relativePath.startsWith("/") )
+            relativePath = "/" + relativePath;
+        String pathname = rootPath + relativePath;
+        new File(pathname).mkdirs();
+    }
+
+    /**
+     *
+     * @return the base path of the workspace as a string
+     */
+    public String getRootPath() {
+        return rootPath;
     }
 
 

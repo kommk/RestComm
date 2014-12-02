@@ -14,6 +14,7 @@ import org.mobicents.servlet.restcomm.rvd.model.steps.record.RecordStep;
 import org.mobicents.servlet.restcomm.rvd.model.steps.redirect.RedirectStep;
 import org.mobicents.servlet.restcomm.rvd.model.steps.reject.RejectStep;
 import org.mobicents.servlet.restcomm.rvd.model.steps.say.SayStep;
+import org.mobicents.servlet.restcomm.rvd.model.steps.script.ScriptStep;
 import org.mobicents.servlet.restcomm.rvd.model.steps.sms.SmsStep;
 import org.mobicents.servlet.restcomm.rvd.model.steps.ussdcollect.UssdCollectStep;
 import org.mobicents.servlet.restcomm.rvd.model.steps.ussdlanguage.UssdLanguageStep;
@@ -40,6 +41,8 @@ public class StepJsonSerializer implements JsonSerializer<Step> {
             resultElement = gson.toJsonTree((GatherStep) step);
         } else if (step.getClass().equals(ExternalServiceStep.class)) {
             resultElement = gson.toJsonTree((ExternalServiceStep) step);
+        } else if (step.getClass().equals(ScriptStep.class)) {
+            resultElement = gson.toJsonTree((ScriptStep) step);
         } else if (step.getClass().equals(DialStep.class)) {
             resultElement = gson.toJsonTree((DialStep) step);
         } else if (step.getClass().equals(HungupStep.class)) {

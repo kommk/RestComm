@@ -33,6 +33,7 @@ import org.mobicents.servlet.restcomm.rvd.utils.Zipper;
 import org.mobicents.servlet.restcomm.rvd.utils.exceptions.ZipperException;
 import org.mobicents.servlet.restcomm.rvd.model.client.Step;
 import org.mobicents.servlet.restcomm.rvd.model.server.ProjectOptions;
+import org.mobicents.servlet.restcomm.rvd.model.steps.script.ScriptStep;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
@@ -532,7 +533,11 @@ public class FsProjectStorage implements ProjectStorage {
 
     }
 
-
+    public static void storeScriptSourceFile(ScriptStep step, Node node, String projectName, WorkspaceStorage storage) throws StorageException {
+        // first create the script directory if it does not exist
+        storage.createDirectory(projectName+"/data/scripts");
+        storage.storeEntityString(step.getSourceCode(), step.getName()+"."+step.getLanguage(), projectName+"/data/scripts");
+    }
 
 }
 

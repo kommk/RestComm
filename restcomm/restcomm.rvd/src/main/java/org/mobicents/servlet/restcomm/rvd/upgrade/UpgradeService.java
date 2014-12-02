@@ -31,13 +31,19 @@ public class UpgradeService {
     }
 
     /**
-     * Checks whether a runtime able to handle (open without upgrading) referenceProjectVersion can also handle checkedProjectVersion
+     * Checks whether a runtime is able to handle (open without upgrading) referenceProjectVersion can also handle checkedProjectVersion
      * @param referenceProjectVersion
      * @param checkedProjectVesion
      * @return
      * @throws InvalidProjectVersion
      */
     public static boolean checkBackwardCompatible(String referenceProjectVersion, String checkedProjectVesion) throws InvalidProjectVersion {
+        if ( "1.2".equals(referenceProjectVersion) ) {
+            if ( "1.2".equals(checkedProjectVesion) || "1.1".equals(checkedProjectVesion) || "1.0".equals(checkedProjectVesion) )
+                return true;
+            else
+                return false;
+        } else
         if ( "1.1".equals(referenceProjectVersion) ) {
             if ( "1.1".equals(checkedProjectVesion) || "1.0".equals(checkedProjectVesion) )
                 return true;

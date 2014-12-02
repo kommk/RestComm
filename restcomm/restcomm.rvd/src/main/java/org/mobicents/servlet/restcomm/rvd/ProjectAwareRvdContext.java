@@ -33,5 +33,12 @@ public class ProjectAwareRvdContext extends RvdContext {
         return projectSettings;
     }
 
+    @Override
+    public String getProjectName() {
+        return projectName;
+    }
+
+
+
 
 }

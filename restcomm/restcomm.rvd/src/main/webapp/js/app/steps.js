@@ -432,6 +432,26 @@ angular.module('Rvd')
 	}	
 	return ExternalServiceModel;
 }])
+.factory('scriptModel', ['rvdModel', function ScriptModelFactory(rvdModel) {
+	function ScriptModel(name) {
+		if (name)
+			this.name = name;
+		this.kind = 'script';
+		this.label = 'script';
+		this.title = 'script';
+		this.sourceCode = '';
+		this.language = 'groovy';
+		this.iface = {};
+	}
+
+	ScriptModel.prototype = new rvdModel();
+	ScriptModel.prototype.constructor = ScriptModel;
+	ScriptModel.prototype.setLanguage = function (lang) {
+		this.language = lang;
+	}
+
+	return ScriptModel;
+}])
 .factory('rejectModel', ['rvdModel', function RejectModelFactory(rvdModel) {
 	function RejectModel(name) {
 		if (name)

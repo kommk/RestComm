@@ -1,5 +1,10 @@
 package org.mobicents.servlet.restcomm.rvd.http;
 
+import groovy.lang.Binding;
+import groovy.util.GroovyScriptEngine;
+import groovy.util.ResourceException;
+import groovy.util.ScriptException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -577,4 +582,33 @@ public class ProjectRestService extends RestService {
             return Response.status(Status.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @GET
+    @Path("groovy")
+    public Response testGroovy() {
+
+        try {
+            String[] roots = new String[] { "/home/nando/workspace_EE/embed_goovy2/groovy/test.groovy" };
+            GroovyScriptEngine gse;
+
+            gse = new GroovyScriptEngine(roots);
+            Binding binding = new Binding();
+            binding.setVariable("input", "world");
+            gse.run("test.groovy", binding);
+            //System.out.println(binding.getVariable("output"));
+
+            return Response.ok( binding.getVariable("output") ).build();
+        } catch (IOException e) {
+            logger.error(e,e);
+            return Response.status(Status.INTERNAL_SERVER_ERROR).build();
+        } catch (ResourceException e) {
+            logger.error(e,e);
+            return Response.status(Status.INTERNAL_SERVER_ERROR).build();
+        } catch (ScriptException e) {
+            logger.error(e,e);
+            return Response.status(Status.INTERNAL_SERVER_ERROR).build();
+        }
+
+   }
+
 }

@@ -60,4 +60,8 @@ public class RvdContext {
         return workspaceStorage;
     }
 
+    public String getProjectName() {
+        throw new UnsupportedOperationException();
+    }
+
 }

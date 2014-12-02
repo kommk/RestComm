@@ -84,6 +84,7 @@ public class BuildService {
         for (Step step : node.getSteps()) {
             logger.debug("Building step " + step.getKind() + " - " + step.getName() );
             FsProjectStorage.storeNodeStep(step, node, projectName, workspaceStorage);
+            step.build(node, projectName, workspaceStorage);
         }
     }
 }

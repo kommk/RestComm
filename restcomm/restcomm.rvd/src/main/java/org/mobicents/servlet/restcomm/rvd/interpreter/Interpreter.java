@@ -347,7 +347,7 @@ public class Interpreter {
                 if (startstep_found) {
                     // we found our starting step. Let's start processing
                     Step step = loadStep(stepname);
-                    String rerouteTo = step.process(this, httpRequest); // is meaningful only for some of the steps like ExternalService steps
+                    String rerouteTo = step.process(this, httpRequest, rvdContext); // is meaningful only for some of the steps like ExternalService steps
                     // check if we have to break the currently rendered module
                     if ( rerouteTo != null )
                         return interpret(rerouteTo, rcmlModel, null, target);

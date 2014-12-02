@@ -2,11 +2,13 @@ package org.mobicents.servlet.restcomm.rvd.model.client;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.mobicents.servlet.restcomm.rvd.ProjectAwareRvdContext;
 import org.mobicents.servlet.restcomm.rvd.exceptions.InterpreterException;
 import org.mobicents.servlet.restcomm.rvd.interpreter.Interpreter;
 import org.mobicents.servlet.restcomm.rvd.interpreter.Target;
 import org.mobicents.servlet.restcomm.rvd.interpreter.exceptions.RVDUnsupportedHandlerVerb;
 import org.mobicents.servlet.restcomm.rvd.model.rcml.RcmlStep;
+import org.mobicents.servlet.restcomm.rvd.storage.WorkspaceStorage;
 import org.mobicents.servlet.restcomm.rvd.storage.exceptions.StorageException;
 
 public abstract class Step {
@@ -53,5 +55,7 @@ public abstract class Step {
     }
 
     // a placeholder function for steps that don't have an actual imlpementation
-    public String process(Interpreter interpreter, HttpServletRequest httpRequest ) throws InterpreterException { return null; }
+    public String process(Interpreter interpreter, HttpServletRequest httpRequest, ProjectAwareRvdContext rvdContext) throws InterpreterException { return null; }
+
+    public void build(Node parentNode, String projectName, WorkspaceStorage storage ) throws StorageException {}
 }
