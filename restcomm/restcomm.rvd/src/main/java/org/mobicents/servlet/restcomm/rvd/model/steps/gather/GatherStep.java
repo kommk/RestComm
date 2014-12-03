@@ -7,8 +7,10 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.mobicents.servlet.restcomm.rvd.RvdConfiguration;
 import org.mobicents.servlet.restcomm.rvd.exceptions.InterpreterException;
+import org.mobicents.servlet.restcomm.rvd.interpreter.InternalVariable;
 import org.mobicents.servlet.restcomm.rvd.interpreter.Interpreter;
 import org.mobicents.servlet.restcomm.rvd.interpreter.Target;
+import org.mobicents.servlet.restcomm.rvd.interpreter.InternalVariables.Scope;
 import org.mobicents.servlet.restcomm.rvd.model.client.Step;
 import org.mobicents.servlet.restcomm.rvd.storage.exceptions.StorageException;
 
@@ -133,14 +135,16 @@ public class GatherStep extends Step {
                 if ( "application".equals(collectdigits.scope) ) {
                     logger.debug("'" + variableName + "' is application scoped");
                     interpreter.putStickyVariable(variableName, variableValue);
+                    interpreter.getInternalVariables().addVariable(variableName, new InternalVariable(variableValue).setScope(Scope.sticky));
                 } else
                 if ( "module".equals(collectdigits.scope) ) {
                     logger.debug("'" + variableName + "' is module scoped");
                     interpreter.putModuleVariable(variableName, variableValue);
+                    interpreter.getInternalVariables().addVariable(variableName, new InternalVariable(variableValue).setScope(Scope.module));
                 }
 
                 // in any case initialize the module-scoped variable
-                interpreter.getVariables().put(variableName, variableValue);
+                //interpreter.getVariables().put(variableName, variableValue);
 
                 interpreter.interpret(collectdigits.next,null,null, originTarget);
             }

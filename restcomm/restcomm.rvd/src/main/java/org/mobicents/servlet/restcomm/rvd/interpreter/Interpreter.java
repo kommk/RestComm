@@ -28,6 +28,7 @@ import org.mobicents.servlet.restcomm.rvd.ProjectLogger;
 import org.mobicents.servlet.restcomm.rvd.exceptions.InterpreterException;
 import org.mobicents.servlet.restcomm.rvd.exceptions.RvdException;
 import org.mobicents.servlet.restcomm.rvd.exceptions.UndefinedTarget;
+import org.mobicents.servlet.restcomm.rvd.interpreter.InternalVariables.Scope;
 import org.mobicents.servlet.restcomm.rvd.interpreter.exceptions.BadExternalServiceResponse;
 import org.mobicents.servlet.restcomm.rvd.interpreter.exceptions.InvalidAccessOperationAction;
 import org.mobicents.servlet.restcomm.rvd.model.ModelMarshaler;
@@ -47,7 +48,6 @@ import org.mobicents.servlet.restcomm.rvd.model.steps.dial.RcmlNumberNoun;
 import org.mobicents.servlet.restcomm.rvd.model.steps.dial.RcmlSipuriNoun;
 import org.mobicents.servlet.restcomm.rvd.model.steps.dial.SipuriNounConverter;
 import org.mobicents.servlet.restcomm.rvd.model.steps.es.AccessOperation;
-import org.mobicents.servlet.restcomm.rvd.model.steps.es.ExternalServiceStep;
 import org.mobicents.servlet.restcomm.rvd.model.steps.es.ValueExtractor;
 import org.mobicents.servlet.restcomm.rvd.model.steps.fax.FaxStepConverter;
 import org.mobicents.servlet.restcomm.rvd.model.steps.fax.RcmlFaxStep;
@@ -119,7 +119,7 @@ public class Interpreter {
     private XStream xstream;
     private Gson gson;
     private String targetParam;
-    private Target target;
+    private Target target;  // the target that is currently being interpreted
     private String appName;
    // private Map<String,String> requestParameters; // parameters like digits, callSid etc.
     MultivaluedMap<String, String> requestParams;
@@ -128,6 +128,7 @@ public class Interpreter {
 
     private String rcmlResult;
     private Map<String, String> variables = new HashMap<String, String>();
+    private InternalVariables internalVariables;
     private List<NodeName> nodeNames;
 
     public static String rcmlOnException() {
@@ -245,6 +246,9 @@ public class Interpreter {
         return variables;
     }
 
+    public InternalVariables getInternalVariables() {
+        return internalVariables;
+    }
 
     public void setVariables(Map<String, String> variables) {
         this.variables = variables;
@@ -302,6 +306,19 @@ public class Interpreter {
     }
 
 
+    /**
+     * Interprets a target (module or an action handler usually) and renders RCML
+     *
+     * @param targetParam - the target to interpret
+     * @param rcmlModel - the object to append all generated RCML
+     * @param prependStep - optional step to prepend in the RCML output. This is usually used when replaying a module to prepend a Say with a validation message
+     * @param originTarget - in chained interpretations this is the parant target that invoked this one
+     *
+     * @return RCML markup as a string
+     *
+     * @throws InterpreterException
+     * @throws StorageException
+     */
     public String interpret(String targetParam, RcmlResponse rcmlModel, Step prependStep, Target originTarget ) throws InterpreterException, StorageException {
 
         logger.debug("starting interpeter for " + targetParam);
@@ -309,6 +326,7 @@ public class Interpreter {
             projectLogger.log("Running target: " + targetParam).tag("app",appName).done();
 
         target = Interpreter.parseTarget(targetParam);
+
         // if we are switching modules, remove module-scoped variables
         if ( originTarget != null  &&  ! RvdUtils.safeEquals(target.getNodename(), originTarget.getNodename() ) ) {
             clearModuleVariables();
@@ -408,23 +426,6 @@ public class Interpreter {
         return value;
     }
 
-
-
-    /**
-     * If the step is executable (like ExternalService) it is executed
-     * @param step
-     * @return String The module name to continue rendering with
-     * @throws IOException
-     * @throws ClientProtocolException
-     */
-    private String processStep(Step step) throws InterpreterException {
-        if (step.getClass().equals(ExternalServiceStep.class)) {
-
-        } // if (step.getClass().equals(ExternalServiceStep.class))
-
-        return null;
-    }
-
     /**
      * Processes a block of text typically used for <Say/>ing that may contain variable expressions. Replaces variable
      * expressions with their corresponding values from interpreter's variables map
@@ -455,22 +456,13 @@ public class Interpreter {
             searchStart = matches.end();
         }
 
-        // for ( VariableInText v : variablesInText ) {
-        // System.out.printf( "found variable %s at %d\n", v.variableName, v.position );
-        // }
-
         StringBuffer buffer = new StringBuffer(sourceText);
         Collections.reverse(variablesInText);
+        Set<String> variableKeys = internalVariables.getVariableKeys();
         for (VariableInText v : variablesInText) {
             String replaceValue = "";
-            if (variables.containsKey(v.variableName))
-                replaceValue = variables.get(v.variableName);
-            else
-            if (variables.containsKey(RvdConfiguration.MODULE_PREFIX + v.variableName) )
-                replaceValue = variables.get(RvdConfiguration.MODULE_PREFIX + v.variableName);
-            else
-            if (variables.containsKey(RvdConfiguration.STICKY_PREFIX + v.variableName) )
-                replaceValue = variables.get(RvdConfiguration.STICKY_PREFIX + v.variableName);
+            if (variableKeys.contains(v.variableName))
+                replaceValue = internalVariables.getVariable(v.variableName).getStringValue();
 
             buffer.replace(v.position, v.position + v.variableName.length() + 1, replaceValue == null ? "" : replaceValue); // +1 is for the $ character
         }
@@ -499,15 +491,16 @@ public class Interpreter {
         }
 
         // append sticky parameters and module-scoped variables
-        for ( String variableName : variables.keySet() ) {
-            if( variableName.startsWith(RvdConfiguration.STICKY_PREFIX) || variableName.startsWith(RvdConfiguration.MODULE_PREFIX) ) {
+        for ( String variableName : internalVariables.getVariableKeys() ) {
+            InternalVariable var = internalVariables.getVariable(variableName);
+            if ( var.scope == Scope.module || var.scope == Scope.sticky ) {
                 if ("".equals(query))
                     query += "?";
                 else
                     query += "&";
 
                 String encodedValue = "";
-                String value = variables.get(variableName);
+                String value = var.getStringValue();
                 if ( value != null )
                     try {
                         encodedValue = URLEncoder.encode( value, "UTF-8");
@@ -515,7 +508,7 @@ public class Interpreter {
                         logger.warn("Error encoding RVD variable " + variableName + ": " + value, e);
                     }
 
-                query += variableName + "=" + encodedValue;
+                query += InternalVariables.ScopeToStringPrefix(var.scope) + variableName + "=" + encodedValue;
             }
         }
 
@@ -614,27 +607,6 @@ public class Interpreter {
 
         return httpResource;
     }
-    /**
-     * Make 'local copies' of sticky_*  parameters passed in the URL.
-     * Propagate existing sticky variables by putting them in the variables array. Whoever creates an action link from now on should take them into account
-     * also make a local copy of them without the sticky_ prefix so that they can be accessed as ordinary module variables
-     */
-    /*
-    public void handleStickyParameters() {
-        for ( String anyVariableName : getRequestParams().keySet() ) {
-            if ( anyVariableName.startsWith(RvdConfiguration.STICKY_PREFIX) ) {
-                // set up sticky variables
-                String variableValue = getRequestParams().getFirst(anyVariableName);
-                getVariables().put(anyVariableName, variableValue );
-
-                // make local copies
-                // First, rip off the sticky_prefix
-                String localVariableName = anyVariableName.substring(RvdConfiguration.STICKY_PREFIX.length());
-                getVariables().put(localVariableName, variableValue);
-            }
-        }
-    }
-    */
 
     public void putStickyVariable(String name, String value) {
             variables.put(RvdConfiguration.STICKY_PREFIX + name, value);
@@ -650,31 +622,50 @@ public class Interpreter {
 
     /**
      * Create rvd variables out of parameters passed in the URL. Restcomm request parameters such as 'CallSid', 'AccountSid' etc. are prefixed with the 'core_'
-     * prefix in their names. Also, sticky_* prefixed parameters have their local copied variables created as well.
+     * prefix in their names.
      */
     private void processRequestParameters() {
+        internalVariables = new InternalVariables();
+
         Set<String> validNames = new HashSet<String>(Arrays.asList(new String[] {"CallSid","AccountSid","From","To","Body","CallStatus","ApiVersion","Direction","CallerName"}));
         for ( String anyVariableName : getRequestParams().keySet() ) {
             if ( validNames.contains(anyVariableName) ) {
                 String variableValue = getRequestParams().getFirst(anyVariableName);
                 getVariables().put(RvdConfiguration.CORE_VARIABLE_PREFIX + anyVariableName, variableValue );
+
+                InternalVariable variable = new InternalVariable(variableValue);
+                variable.setCore(true);
+                internalVariables.addVariable(RvdConfiguration.CORE_VARIABLE_PREFIX + anyVariableName, variable );
             } else
             if ( anyVariableName.startsWith(RvdConfiguration.STICKY_PREFIX) || anyVariableName.startsWith(RvdConfiguration.MODULE_PREFIX) ) {
                 // set up sticky variables
                 String variableValue = getRequestParams().getFirst(anyVariableName);
                 getVariables().put(anyVariableName, variableValue );
 
-                // make local copies
-                // First, rip off the sticky_prefix
-                //String localVariableName = anyVariableName.substring(RvdConfiguration.STICKY_PREFIX.length());
-                //getVariables().put(localVariableName, variableValue);
+                if ( anyVariableName.startsWith(RvdConfiguration.MODULE_PREFIX) ) {
+                    InternalVariable variable = new InternalVariable(variableValue);
+                    variable.setScope(InternalVariables.Scope.module);
+                    internalVariables.addVariable(anyVariableName.substring(RvdConfiguration.MODULE_PREFIX.length()), variable );
+                } else
+                if ( anyVariableName.startsWith(RvdConfiguration.STICKY_PREFIX) ) {
+                    InternalVariable variable = new InternalVariable(variableValue);
+                    variable.setScope(InternalVariables.Scope.sticky);
+                    internalVariables.addVariable(anyVariableName.substring(RvdConfiguration.MODULE_PREFIX.length()), variable );
+                }
             } else {
                 //for the rest of the parameters simply create a variable with the same name
                 String variableValue = getRequestParams().getFirst(anyVariableName);
                 getVariables().put(anyVariableName, variableValue );
+
+                InternalVariable variable = new InternalVariable(variableValue);
+                internalVariables.addVariable(anyVariableName, variable );
             }
         }
+
+        this.internalVariables = internalVariables;
+        logger.debug(internalVariables);
     }
+
 
     /** Add bootstrap parameters to the variables array. Usually these are used in application downloaded
      * from the app store.
@@ -700,6 +691,10 @@ public class Interpreter {
                 if ( valueElement.isJsonPrimitive() && valueElement.getAsJsonPrimitive().isString() ) {
                     value = valueElement.getAsJsonPrimitive().getAsString();
                     getVariables().put(name, value);
+
+                    InternalVariable variable = new InternalVariable(value);
+                    internalVariables.addVariable(name.substring(RvdConfiguration.MODULE_PREFIX.length()), variable );
+
                     logger.debug("Loaded bootstrap parameter: " + name + " - " + value);
                 } else
                     logger.warn("Warning. Not-string bootstrap value found for parameter: " + name);
@@ -717,6 +712,13 @@ public class Interpreter {
           if( variableName.startsWith(RvdConfiguration.MODULE_PREFIX) ) {
               it.remove();
           }
+        }
+
+        Iterator<String> it2 = internalVariables.getVariableKeys().iterator();
+        while (it2.hasNext()) {
+          String varName = it2.next();
+          if ( internalVariables.getVariable(varName).getScope() == Scope.module )
+              it2.remove();
         }
     }
 }

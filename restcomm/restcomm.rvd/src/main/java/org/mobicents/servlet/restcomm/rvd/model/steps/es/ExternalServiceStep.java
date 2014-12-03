@@ -23,7 +23,9 @@ import org.apache.log4j.Logger;
 import org.mobicents.servlet.restcomm.rvd.ProjectAwareRvdContext;
 import org.mobicents.servlet.restcomm.rvd.exceptions.ESRequestException;
 import org.mobicents.servlet.restcomm.rvd.exceptions.InterpreterException;
+import org.mobicents.servlet.restcomm.rvd.interpreter.InternalVariable;
 import org.mobicents.servlet.restcomm.rvd.interpreter.Interpreter;
+import org.mobicents.servlet.restcomm.rvd.interpreter.InternalVariables.Scope;
 import org.mobicents.servlet.restcomm.rvd.interpreter.exceptions.BadExternalServiceResponse;
 import org.mobicents.servlet.restcomm.rvd.interpreter.exceptions.ErrorParsingExternalServiceUrl;
 import org.mobicents.servlet.restcomm.rvd.interpreter.exceptions.RemoteServiceError;
@@ -289,10 +291,14 @@ public class ExternalServiceStep extends Step {
                                 throw e;
                             }
 
-                            if ( "application".equals(assignment.getScope()) )
+                            if ( "application".equals(assignment.getScope()) ) {
                                 interpreter.putStickyVariable(assignment.getDestVariable(), value);
-                            if ( "module".equals(assignment.getScope()) )
+                                interpreter.getInternalVariables().addVariable(assignment.getDestVariable(), new InternalVariable(value).setScope(Scope.sticky));
+                            }
+                            if ( "module".equals(assignment.getScope()) ) {
                                 interpreter.putModuleVariable(assignment.getDestVariable(), value);
+                                interpreter.getInternalVariables().addVariable(assignment.getDestVariable(), new InternalVariable(value).setScope(Scope.module));
+                            }
 
                             //interpreter.putVariable(assignment.getDestVariable(), value );
                         } else
@@ -309,10 +315,14 @@ public class ExternalServiceStep extends Step {
                             throw e;
                         }
 
-                        if ( "application".equals(assignment.getScope()) )
+                        if ( "application".equals(assignment.getScope()) ) {
                             interpreter.putStickyVariable(assignment.getDestVariable(), value);
-                        if ( "module".equals(assignment.getScope()) )
+                            interpreter.getInternalVariables().addVariable(assignment.getDestVariable(), new InternalVariable(value).setScope(Scope.sticky));
+                        }
+                        if ( "module".equals(assignment.getScope()) ) {
                             interpreter.putModuleVariable(assignment.getDestVariable(), value);
+                            interpreter.getInternalVariables().addVariable(assignment.getDestVariable(), new InternalVariable(value).setScope(Scope.module));
+                        }
 
                         //interpreter.putVariable(assignment.getDestVariable(), value );
                     }
