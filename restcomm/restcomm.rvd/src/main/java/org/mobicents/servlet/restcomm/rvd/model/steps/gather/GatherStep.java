@@ -73,8 +73,10 @@ public class GatherStep extends Step {
         logger.info("handling gather action");
 
         String digitsString = interpreter.getRequestParams().getFirst("Digits");
-        if ( digitsString != null )
-            interpreter.getVariables().put(RvdConfiguration.CORE_VARIABLE_PREFIX + "Digits", digitsString);
+        if ( digitsString != null ) {
+            //interpreter.getVariables().put(RvdConfiguration.CORE_VARIABLE_PREFIX + "Digits", digitsString);
+            interpreter.getInternalVariables().addVariable(RvdConfiguration.CORE_VARIABLE_PREFIX + "Digits", new InternalVariable(digitsString).setCore(true));
+        }
 
         boolean valid = true;
 
@@ -134,12 +136,12 @@ public class GatherStep extends Step {
                 // is this an application-scoped variable ?
                 if ( "application".equals(collectdigits.scope) ) {
                     logger.debug("'" + variableName + "' is application scoped");
-                    interpreter.putStickyVariable(variableName, variableValue);
+                    //interpreter.putStickyVariable(variableName, variableValue);
                     interpreter.getInternalVariables().addVariable(variableName, new InternalVariable(variableValue).setScope(Scope.sticky));
                 } else
                 if ( "module".equals(collectdigits.scope) ) {
                     logger.debug("'" + variableName + "' is module scoped");
-                    interpreter.putModuleVariable(variableName, variableValue);
+                    //interpreter.putModuleVariable(variableName, variableValue);
                     interpreter.getInternalVariables().addVariable(variableName, new InternalVariable(variableValue).setScope(Scope.module));
                 }
 

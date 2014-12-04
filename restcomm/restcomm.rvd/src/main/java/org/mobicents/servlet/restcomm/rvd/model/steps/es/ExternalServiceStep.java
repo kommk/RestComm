@@ -292,11 +292,11 @@ public class ExternalServiceStep extends Step {
                             }
 
                             if ( "application".equals(assignment.getScope()) ) {
-                                interpreter.putStickyVariable(assignment.getDestVariable(), value);
+                                //interpreter.putStickyVariable(assignment.getDestVariable(), value);
                                 interpreter.getInternalVariables().addVariable(assignment.getDestVariable(), new InternalVariable(value).setScope(Scope.sticky));
                             }
                             if ( "module".equals(assignment.getScope()) ) {
-                                interpreter.putModuleVariable(assignment.getDestVariable(), value);
+                                //interpreter.putModuleVariable(assignment.getDestVariable(), value);
                                 interpreter.getInternalVariables().addVariable(assignment.getDestVariable(), new InternalVariable(value).setScope(Scope.module));
                             }
 
@@ -316,18 +316,18 @@ public class ExternalServiceStep extends Step {
                         }
 
                         if ( "application".equals(assignment.getScope()) ) {
-                            interpreter.putStickyVariable(assignment.getDestVariable(), value);
+                            //interpreter.putStickyVariable(assignment.getDestVariable(), value);
                             interpreter.getInternalVariables().addVariable(assignment.getDestVariable(), new InternalVariable(value).setScope(Scope.sticky));
                         }
                         if ( "module".equals(assignment.getScope()) ) {
-                            interpreter.putModuleVariable(assignment.getDestVariable(), value);
+                            //interpreter.putModuleVariable(assignment.getDestVariable(), value);
                             interpreter.getInternalVariables().addVariable(assignment.getDestVariable(), new InternalVariable(value).setScope(Scope.module));
                         }
 
                         //interpreter.putVariable(assignment.getDestVariable(), value );
                     }
                 }
-                logger.debug("variables after processing ExternalService step: " + interpreter.getVariables().toString() );
+                //logger.debug("variables after processing ExternalService step: " + interpreter.getVariables().toString() );
             } catch (JsonSyntaxException e) {
                 throw new BadExternalServiceResponse("External Service request received a malformed JSON response" );
             }

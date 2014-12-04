@@ -7,6 +7,8 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.mobicents.servlet.restcomm.rvd.RvdConfiguration;
 import org.mobicents.servlet.restcomm.rvd.exceptions.InterpreterException;
+import org.mobicents.servlet.restcomm.rvd.interpreter.InternalVariable;
+import org.mobicents.servlet.restcomm.rvd.interpreter.InternalVariables.Scope;
 import org.mobicents.servlet.restcomm.rvd.interpreter.Interpreter;
 import org.mobicents.servlet.restcomm.rvd.interpreter.Target;
 import org.mobicents.servlet.restcomm.rvd.model.client.Step;
@@ -86,16 +88,22 @@ public class UssdCollectStep extends Step {
             if ( variableValue == null ) {
                 logger.warn("'Digits' parameter was null. Is this a valid restcomm request?");
                 variableValue = "";
+            } else {
+                //interpreter.getVariables().put(RvdConfiguration.CORE_VARIABLE_PREFIX + "Digits", digitsString);
+                interpreter.getInternalVariables().addVariable(RvdConfiguration.CORE_VARIABLE_PREFIX + "Digits", new InternalVariable(variableValue).setCore(true));
             }
 
             // is this an application-scoped variable ?
             if ( "application".equals(collectdigits.scope) ) {
                 logger.debug("'" + variableName + "' is application scoped");
-                // if it is, create a sticky_* variable named after it
-                interpreter.getVariables().put(RvdConfiguration.STICKY_PREFIX + variableName, variableValue);
+                //interpreter.getVariables().put(RvdConfiguration.STICKY_PREFIX + variableName, variableValue);
+                interpreter.getInternalVariables().addVariable(variableName, new InternalVariable(variableValue).setScope(Scope.sticky));
+            } else
+            if ( "module".equals(collectdigits.scope) ) {
+                interpreter.getInternalVariables().addVariable(variableName, new InternalVariable(variableValue).setScope(Scope.module));
             }
             // in any case initialize the module-scoped variable
-            interpreter.getVariables().put(variableName, variableValue);
+            //interpreter.getVariables().put(variableName, variableValue);
 
             interpreter.interpret(collectdigits.next,null,null, originTarget);
         }

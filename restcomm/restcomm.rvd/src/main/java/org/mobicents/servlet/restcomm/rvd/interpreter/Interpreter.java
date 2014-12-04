@@ -127,7 +127,7 @@ public class Interpreter {
     private String contextPath;
 
     private String rcmlResult;
-    private Map<String, String> variables = new HashMap<String, String>();
+    //private Map<String, String> variables = new HashMap<String, String>();
     private InternalVariables internalVariables;
     private List<NodeName> nodeNames;
 
@@ -242,17 +242,19 @@ public class Interpreter {
         return httpRequest;
     }
 
-    public Map<String, String> getVariables() {
-        return variables;
-    }
+    //public Map<String, String> getVariables() {
+    //    return variables;
+    //}
 
     public InternalVariables getInternalVariables() {
         return internalVariables;
     }
 
+    /*
     public void setVariables(Map<String, String> variables) {
         this.variables = variables;
     }
+    */
 
 
     public Target getTarget() {
@@ -608,6 +610,7 @@ public class Interpreter {
         return httpResource;
     }
 
+    /*
     public void putStickyVariable(String name, String value) {
             variables.put(RvdConfiguration.STICKY_PREFIX + name, value);
     }
@@ -619,6 +622,7 @@ public class Interpreter {
     public void putVariable(String name, String value) {
         variables.put(name, value);
     }
+    */
 
     /**
      * Create rvd variables out of parameters passed in the URL. Restcomm request parameters such as 'CallSid', 'AccountSid' etc. are prefixed with the 'core_'
@@ -631,7 +635,7 @@ public class Interpreter {
         for ( String anyVariableName : getRequestParams().keySet() ) {
             if ( validNames.contains(anyVariableName) ) {
                 String variableValue = getRequestParams().getFirst(anyVariableName);
-                getVariables().put(RvdConfiguration.CORE_VARIABLE_PREFIX + anyVariableName, variableValue );
+                //getVariables().put(RvdConfiguration.CORE_VARIABLE_PREFIX + anyVariableName, variableValue );
 
                 InternalVariable variable = new InternalVariable(variableValue);
                 variable.setCore(true);
@@ -640,7 +644,7 @@ public class Interpreter {
             if ( anyVariableName.startsWith(RvdConfiguration.STICKY_PREFIX) || anyVariableName.startsWith(RvdConfiguration.MODULE_PREFIX) ) {
                 // set up sticky variables
                 String variableValue = getRequestParams().getFirst(anyVariableName);
-                getVariables().put(anyVariableName, variableValue );
+                //getVariables().put(anyVariableName, variableValue );
 
                 if ( anyVariableName.startsWith(RvdConfiguration.MODULE_PREFIX) ) {
                     InternalVariable variable = new InternalVariable(variableValue);
@@ -655,7 +659,7 @@ public class Interpreter {
             } else {
                 //for the rest of the parameters simply create a variable with the same name
                 String variableValue = getRequestParams().getFirst(anyVariableName);
-                getVariables().put(anyVariableName, variableValue );
+                //getVariables().put(anyVariableName, variableValue );
 
                 InternalVariable variable = new InternalVariable(variableValue);
                 internalVariables.addVariable(anyVariableName, variable );
@@ -690,7 +694,7 @@ public class Interpreter {
                 String value;
                 if ( valueElement.isJsonPrimitive() && valueElement.getAsJsonPrimitive().isString() ) {
                     value = valueElement.getAsJsonPrimitive().getAsString();
-                    getVariables().put(name, value);
+                    //getVariables().put(name, value);
 
                     InternalVariable variable = new InternalVariable(value);
                     internalVariables.addVariable(name.substring(RvdConfiguration.MODULE_PREFIX.length()), variable );
@@ -706,6 +710,7 @@ public class Interpreter {
      * When switching from one module to the next clears module-scoped variables.
      */
     public void clearModuleVariables() {
+        /*
         Iterator<String> it = variables.keySet().iterator();
         while (it.hasNext()) {
           String variableName = it.next();
@@ -713,6 +718,7 @@ public class Interpreter {
               it.remove();
           }
         }
+        */
 
         Iterator<String> it2 = internalVariables.getVariableKeys().iterator();
         while (it2.hasNext()) {

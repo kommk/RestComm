@@ -8,6 +8,7 @@ import org.mobicents.servlet.restcomm.rvd.BuildService;
 import org.mobicents.servlet.restcomm.rvd.RvdConfiguration;
 import org.mobicents.servlet.restcomm.rvd.utils.RvdUtils;
 import org.mobicents.servlet.restcomm.rvd.exceptions.InterpreterException;
+import org.mobicents.servlet.restcomm.rvd.interpreter.InternalVariable;
 import org.mobicents.servlet.restcomm.rvd.interpreter.Interpreter;
 import org.mobicents.servlet.restcomm.rvd.interpreter.Target;
 import org.mobicents.servlet.restcomm.rvd.model.client.Step;
@@ -90,9 +91,11 @@ public class FaxStep extends Step {
         String FaxStatus = interpreter.getRequestParams().getFirst("FaxStatus");  //.getHttpRequest().getParameter("FaxStatus");
 
         if ( FaxSid != null )
-            interpreter.getVariables().put(RvdConfiguration.CORE_VARIABLE_PREFIX + "FaxSid", FaxSid);
+            interpreter.getInternalVariables().addVariable(RvdConfiguration.CORE_VARIABLE_PREFIX + "FaxSid", new InternalVariable(FaxSid).setCore(true));
+            //interpreter.getVariables().put(RvdConfiguration.CORE_VARIABLE_PREFIX + "FaxSid", FaxSid);
         if (FaxStatus != null )
-            interpreter.getVariables().put(RvdConfiguration.CORE_VARIABLE_PREFIX + "FaxStatus", FaxStatus);
+            interpreter.getInternalVariables().addVariable(RvdConfiguration.CORE_VARIABLE_PREFIX + "FaxStatus", new InternalVariable(FaxStatus).setCore(true));
+            //interpreter.getVariables().put(RvdConfiguration.CORE_VARIABLE_PREFIX + "FaxStatus", FaxStatus);
 
         interpreter.interpret( getNext(), null, null, originTarget );
     }

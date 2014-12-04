@@ -8,6 +8,7 @@ import org.mobicents.servlet.restcomm.rvd.BuildService;
 import org.mobicents.servlet.restcomm.rvd.RvdConfiguration;
 import org.mobicents.servlet.restcomm.rvd.utils.RvdUtils;
 import org.mobicents.servlet.restcomm.rvd.exceptions.InterpreterException;
+import org.mobicents.servlet.restcomm.rvd.interpreter.InternalVariable;
 import org.mobicents.servlet.restcomm.rvd.interpreter.Interpreter;
 import org.mobicents.servlet.restcomm.rvd.interpreter.Target;
 import org.mobicents.servlet.restcomm.rvd.model.client.Step;
@@ -99,9 +100,11 @@ public class SmsStep extends Step {
         String SmsStatus = interpreter.getRequestParams().getFirst("SmsStatus");
 
         if ( SmsSid != null )
-            interpreter.getVariables().put(RvdConfiguration.CORE_VARIABLE_PREFIX + "SmsSid", SmsSid);
+            //interpreter.getVariables().put(RvdConfiguration.CORE_VARIABLE_PREFIX + "SmsSid", SmsSid);
+            interpreter.getInternalVariables().addVariable(RvdConfiguration.CORE_VARIABLE_PREFIX + "SmsSid", new InternalVariable(SmsSid).setCore(true));
         if (SmsStatus != null )
-            interpreter.getVariables().put(RvdConfiguration.CORE_VARIABLE_PREFIX + "SmsStatus", SmsStatus);
+            //interpreter.getVariables().put(RvdConfiguration.CORE_VARIABLE_PREFIX + "SmsStatus", SmsStatus);
+            interpreter.getInternalVariables().addVariable(RvdConfiguration.CORE_VARIABLE_PREFIX + "SmsStatus", new InternalVariable(SmsStatus).setCore(true));
 
         interpreter.interpret( getNext(), null, null, originTarget );
     }
